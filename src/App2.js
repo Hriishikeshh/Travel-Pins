@@ -5,17 +5,23 @@ import { Room,Star } from '@material-ui/icons';
 import "./app.css"
 import axios from "axios";
 import {format} from "timeago.js";
+import Register from './components/Register';
+import Login from './components/Login';
+
 
 
 
 function App2() {
-  const currentUser="prem";
+  const [currentUser,setCurrentUser] = useState(null);
   const[pins,setpins] = useState([])
   const[currentPlaceId, setCurrentPlaceId]= useState(null);
   const[newPlace, setNewPlace]= useState(null);
   const [viewport, setViewport] = useState({
     zoom: 8,
   });
+
+  const [showRegister,setShowRegister]=useState(false);
+  const [showLogin,setShowLogin]=useState(false);
 
   const[title, setTitle]= useState(null);
   const[desc, setDesc]= useState(null);
@@ -60,6 +66,7 @@ function App2() {
     });
   }
 
+  //handling the submit pin
   const handleSubmit = async (e) => {
     e.preventDefault();  // avoids page refresh after submit
     const newPin = {
@@ -71,7 +78,7 @@ function App2() {
       long:newPlace.long
     }
 
-    //send this respons to backend and add to backend
+    //send this response to backend and add to backend
     try{
       const res = await axios.post("/pins", newPin);
       setpins([...pins,res.data]); 
@@ -89,7 +96,7 @@ function App2() {
       style={{ width: '100vw', height: '100vh', zIndex: 999 }}
       onWheel={handleScroll}
     >
-      <ReactMapGL
+      <ReactMapGL 
         {...viewport}
         mapboxAccessToken={process.env.REACT_APP_MAPBOX}
         onViewportChange={(nextViewport) => setViewport(nextViewport)}
@@ -97,7 +104,7 @@ function App2() {
         onDblClick={handleAddClick}
         transitionDuration="400"
       >
-
+        <Register />
         {Array.isArray(pins) && 
         pins.map(p => (
           <>
@@ -108,6 +115,7 @@ function App2() {
           
           {p._id === currentPlaceId && (
           <Popup
+            key={p._id}
             latitude={p.lat}
             longitude={p.long}
             anchor="bottom"
@@ -160,12 +168,19 @@ function App2() {
                 
                 <button className='submitButton' type='submit'>Add Pin</button>
               </form>
-
-            </div></Popup>
+            </div>
+            </Popup>
           )}
-
-
+          
+          {currentUser ? (<button className='button logout'>Log out</button>):
+          (<><div><button className='button login'onClick={() => setShowLogin(true)}>login</button> 
+          <button className='button register' onClick={() => setShowRegister(true)}>Register</button></div></>)}
+          
+          {showRegister && <Register />
+          {showLogin && <Login />}
       </ReactMapGL>
+    
+      
     </div>
   );
 }
